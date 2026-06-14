@@ -544,13 +544,13 @@ Prompts for ENCLOSURE-INDEX when called interactively."
 (defvar elfeed-show--fetch nil
   "Active fetch processes.")
 
-(cl-defun elfeed-show--fetch (cb &key url key headers force)
+(cl-defun elfeed-show--fetch (cb &key url key headers force quiet)
   "Fetch link content, store result in the entry metadata and call CB.
 The callback CB is called with the URL and content string on success in
 the show buffer.  URL defaults to the entry link.  The content is stored
 under KEY, defaulting to :link-content in the entry metadata.  HEADERS
 are optional HTTP headers.  If FORCE is non-nil do not use cached
-content."
+content.  If QUIET is nil, display a message in the echo area."
   (unless elfeed-use-curl
     (error "`elfeed-show-fetch-link' requires curl"))
   (setq url (or url
@@ -570,19 +570,26 @@ content."
                  (entry elfeed-show-entry))
              (lambda (success)
                (setf (alist-get key elfeed-show--fetch nil t) nil)
-               (when success
+               (if (not success)
+                   (unless quiet
+                     (message "Fetching %s...error" url))
                  (let ((content (buffer-string)))
                    (setf (elfeed-meta entry key) (elfeed-ref content))
                    (when (buffer-live-p buffer)
                      (with-current-buffer buffer
                        (when (eq entry elfeed-show-entry)
-                         (funcall cb url content))))))))
-           :headers headers))))
+                         (funcall cb url content))))
+                   (unless quiet
+                     (message "Fetching %s...done" url))))))
+           :headers headers))
+    (unless quiet
+      (message "Fetching %s..." url))))
 
-(defun elfeed-show-fetch-link (&optional force)
+(defun elfeed-show-fetch-link (&optional force quiet)
   "Fetch link content and insert it into the show buffer.
 If the prefix argument FORCE is non-nil, force refetching.  The fetched
-content is stored in the entry metadata under the key :link-content."
+content is stored in the entry metadata under the key :link-content.  If
+QUIET is nil, display a message in the echo area."
   (interactive "P" elfeed-show-mode)
   (elfeed-show--fetch
    (lambda (url content)
@@ -600,13 +607,13 @@ content is stored in the entry metadata under the key :link-content."
          (goto-char (point-max))
          (insert (propertize "\n" 'elfeed-link-content t))
          (elfeed-insert-html content (elfeed-compute-base url)))))
-   :force force))
+   :force force :quiet quiet))
 
 (defun elfeed-show-auto-fetch-link ()
   "Automatically fetch link content if the feed is marked with `:fetch-link'."
   (when (or (elfeed-meta elfeed-show-entry :link-content)
             (elfeed-meta (elfeed-entry-feed elfeed-show-entry) :fetch-link))
-    (elfeed-show-fetch-link)))
+    (elfeed-show-fetch-link nil t)))
 
 ;; Readable mode
 
