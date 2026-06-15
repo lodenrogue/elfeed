@@ -4,6 +4,7 @@
 
 - =elfeed-search-live-filter=: Use =while-no-input= for better responsiveness.
 - =elfeed-show-fetch-link=: Display message in the buffer during fetching.
+- Hide more commands in non-Elfeed buffers.
 
 * Version 4.0.1 (2026-06-11)
 
