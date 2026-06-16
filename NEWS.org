@@ -5,6 +5,8 @@
 - =elfeed-search-live-filter=: Use =while-no-input= for better responsiveness.
 - =elfeed-show-fetch-link=: Display message in the buffer during fetching.
 - Hide more commands in non-Elfeed buffers.
+- =elfeed-search-next-separator=, =elfeed-search-previous-separator=: New commands
+  to traverse date or feed title separators.
 
 * Version 4.0.1 (2026-06-11)
 
