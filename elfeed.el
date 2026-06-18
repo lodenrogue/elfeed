@@ -489,10 +489,11 @@ URL identifies the feed and XML is the parsed content."
     (cl-loop for item in (xml-query-all* (rss channel item) xml) collect
              (let* ((title (or (xml-query* (title *) item) ""))
                     (guid (xml-query* (guid *) item))
+                    (link (or (xml-query* (link *) item) guid))
                     (link (elfeed--fixup-protocol
                            protocol
                            (elfeed-update-location
-                            url (or (xml-query* (link *) item) guid))))
+                            url (and link (string-trim link)))))
                     (date (or (xml-query* (pubDate *) item)
                               (xml-query* (date *) item)))
                     (authors (nconc (elfeed--rss-author-to-plist
